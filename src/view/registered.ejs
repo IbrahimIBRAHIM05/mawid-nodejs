@@ -1,0 +1,15 @@
+<%- include("partials/header") %>
+
+<h1>You're registered!</h1>
+
+<p>Thanks, <%= name %>. Your spot is confirmed<% if (event) { %> for <strong><%= event.title %></strong><% } %>.</p>
+
+<% if (event) { %>
+    <p>Starts: <%= formatDateTime(event.startsAt) %></p>
+    <% if (event.location) { %>
+        <p>Location: <%= event.location %></p>
+    <% } %>
+    <p><a href="/e/<%= event.slug %>">Back to the event page</a></p>
+<% } %>
+
+<%- include("partials/footer") %>

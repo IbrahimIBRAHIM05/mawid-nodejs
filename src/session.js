@@ -3,6 +3,11 @@ const {PrismaSessionStore} = require("@quixo3/prisma-session-store");
 
 const prisma = require("./prisma");
 
+if (!process.env.SESSION_SECRET) {
+  console.error("SESSION_SECRET is not set. Add it to your .env file (see .env.example).");
+  process.exit(1);
+}
+
 const store = new PrismaSessionStore(prisma, {
   checkPeriod: 2 * 60 * 1000, //ms
   dbRecordIdIsSessionId: true,
