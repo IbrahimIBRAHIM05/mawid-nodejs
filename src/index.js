@@ -1,46 +1,21 @@
-require('dotenv').config();
-const express = require('express');
-const helmet = require('helmet');
-const { rateLimit } = require('express-rate-limit');
-const pino = require('pino');
-const pinoHttp = require('pino-http');
 
-const app = express();
-const logger = pino({ level: 'info' });
-const port = Number(process.env.PORT) || 3000;
+const app = require("./app");
+const prisma = require("./prisma");
 
-app.set('view engine', 'ejs');
-app.use(pinoHttp({
-  logger,
-  serializers: {
-    req(req) {
-      return {
-        method: req.method,
-        url: req.url?.split('?')[0],
-        remoteAddress: req.socket?.remoteAddress
-      };
-    },
-    res(res) {
-      return { statusCode: res.statusCode };
+const port = process.env.PORT || 3000;
+
+async function start() {
+    try {
+        await prisma.$queryRaw`SELECT 1`;
+        console.log("Connected to MySQL");
+
+        app.listen(port, () => {
+            console.log(`Mawid is running on port ${port}`);
+        });
+    } catch (err) {
+        console.error(`Could not connect to MySQL: ${err.message}`);
+        process.exit(1);
     }
-  }
-}));
-app.use(helmet());
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 100,
-  standardHeaders: 'draft-8',
-  legacyHeaders: false
-}));
+}
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-app.get('/about', (req, res) => {
-  res.send('About page');
-});
-
-app.listen(port, () => {
-  logger.info(`Mawid is running on port ${port}`);
-});
+start();
