@@ -2,6 +2,21 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user.model");
 
+// Issues a fresh session ID when someone logs in, so a session ID planted
+// before login (session fixation) cannot be reused afterwards.
+function startSession(req, user) {
+    return new Promise((resolve, reject) => {
+        req.session.regenerate((err) => {
+            if (err) {
+                return reject(err);
+            }
+
+            req.session.user = user;
+            req.session.save((saveErr) => (saveErr ? reject(saveErr) : resolve()));
+        });
+    });
+}
+
 function showSignup(req, res) {
     res.render("signup", { error: null });
 }
@@ -32,9 +47,22 @@ async function signup(req, res) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const id = await User.create(name, email, passwordHash);
 
-    req.session.user = { id, name };
+    let id;
+    try {
+        id = await User.create(name, email, passwordHash);
+    } catch (err) {
+        // Two sign-ups with the same email at the same moment: the unique
+        // index on users.email rejects the second one.
+        if (err && err.code === "P2002") {
+            return res.status(400).render("signup", {
+                error: "That email is already taken."
+            });
+        }
+        throw err;
+    }
+
+    await startSession(req, { id, name });
 
     res.redirect("/");
 }
@@ -63,10 +91,10 @@ async function login(req, res) {
         });
     }
 
-    req.session.user = {
+    await startSession(req, {
         id: user.id,
         name: user.name
-    };
+    });
 
     res.redirect("/");
 }

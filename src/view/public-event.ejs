@@ -1,0 +1,44 @@
+<%- include("partials/header") %>
+
+<h1><%= event.title %></h1>
+
+<p>Starts: <%= formatDateTime(event.startsAt) %></p>
+<% if (event.location) { %>
+    <p>Location: <%= event.location %></p>
+<% } %>
+
+<p id="spots" data-capacity="<%= event.capacity %>" data-registered="<%= registered %>">
+    <% if (spotsLeft > 0) { %>
+        <%= spotsLeft %> of <%= event.capacity %> spots left.
+    <% } else { %>
+        This event is full.
+    <% } %>
+</p>
+
+<% if (error) { %>
+    <p><%= error %></p>
+<% } %>
+
+<% if (spotsLeft > 0) { %>
+    <h2>Register</h2>
+
+    <form action="/e/<%= event.slug %>/register" method="POST">
+        <div>
+            <label>
+                Name:
+                <input type="text" name="name" maxlength="100" value="<%= values.name || '' %>" required>
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Email:
+                <input type="email" name="email" maxlength="255" value="<%= values.email || '' %>" required>
+            </label>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+<% } %>
+
+<%- include("partials/footer") %>

@@ -1,0 +1,53 @@
+<%- include("partials/header") %>
+
+<% if (created) { %>
+    <p><strong>Your event was created.</strong> Share the public link below so people can register.</p>
+<% } %>
+
+<h1><%= event.title %></h1>
+
+<p>Starts: <%= formatDateTime(event.startsAt) %></p>
+<% if (event.location) { %>
+    <p>Location: <%= event.location %></p>
+<% } %>
+<p>Registered: <%= event.registrations.length %> / <%= event.capacity %></p>
+
+<h2>Public link</h2>
+<p>
+    <label>
+        Share this link:
+        <input type="text" value="<%= publicUrl %>" size="60" readonly>
+    </label>
+</p>
+<p><a href="<%= publicUrl %>">Open the public event page</a></p>
+
+<h2>Attendees</h2>
+
+<% if (event.registrations.length === 0) { %>
+    <p>No one has registered yet.</p>
+<% } else { %>
+    <table border="1" cellpadding="6">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Registered at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% event.registrations.forEach(function (registration, index) { %>
+                <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= registration.name %></td>
+                    <td><%= registration.email %></td>
+                    <td><%= formatDateTime(registration.createdAt) %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+<% } %>
+
+<p><a href="/dashboard">Back to my events</a></p>
+
+<%- include("partials/footer") %>
